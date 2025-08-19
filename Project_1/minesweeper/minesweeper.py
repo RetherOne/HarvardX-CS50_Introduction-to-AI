@@ -2,7 +2,7 @@ import itertools
 import random
 
 
-class Minesweeper():
+class Minesweeper:
     """
     Minesweeper game representation
     """
@@ -84,7 +84,7 @@ class Minesweeper():
         return self.mines_found == self.mines
 
 
-class Sentence():
+class Sentence:
     """
     Logical statement about a Minesweeper game
     A sentence consists of a set of board cells,
@@ -105,12 +105,13 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+        pass
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
+
         raise NotImplementedError
 
     def mark_mine(self, cell):
@@ -128,7 +129,7 @@ class Sentence():
         raise NotImplementedError
 
 
-class MinesweeperAI():
+class MinesweeperAI:
     """
     Minesweeper game player
     """
@@ -182,7 +183,12 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+
+        self.moves_made.add(cell)
+        self.safes.add(cell)
+        sentence = Sentence(cell, count)
+        self.knowledge.append(sentence)
+        print(sentence)
 
     def make_safe_move(self):
         """
