@@ -105,28 +105,36 @@ class Sentence:
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        pass
+        if not self.cells:
+            return set()
+        if self.count == len(self.cells) and self.count > 0:
+            return set(self.cells)
+        return set()
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-
-        raise NotImplementedError
+        if self.cells and self.count == 0:
+            return set(self.cells)
+        return set()
 
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.count -= 1
+            self.cells.remove(cell)
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
 
 
 class MinesweeperAI:
@@ -186,9 +194,6 @@ class MinesweeperAI:
 
         self.moves_made.add(cell)
         self.safes.add(cell)
-        sentence = Sentence(cell, count)
-        self.knowledge.append(sentence)
-        print(sentence)
 
     def make_safe_move(self):
         """
@@ -199,7 +204,7 @@ class MinesweeperAI:
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise NotImplementedError
+        raise None
 
     def make_random_move(self):
         """
@@ -208,4 +213,8 @@ class MinesweeperAI:
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        while (
+            result := (random.randrange(self.width), random.randrange(self.height))
+        ) in self.moves_made or result in self.mines:
+            result = (random.randrange(self.width), random.randrange(self.height))
+        return result
