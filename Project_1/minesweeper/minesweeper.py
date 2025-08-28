@@ -193,7 +193,46 @@ class MinesweeperAI:
         """
 
         self.moves_made.add(cell)
-        self.safes.add(cell)
+        self.mark_safe(cell)
+
+        neighbors = set()
+        for di in [-1, 0, 1]:
+            for dj in [-1, 0, 1]:
+                ni, nj = cell[0] + di, cell[1] + dj
+                if 0 <= ni < self.height and 0 <= nj < self.width:
+                    if (ni, nj) != cell:
+                        if (ni, nj) not in self.safes:
+                            neighbors.add((ni, nj))
+
+        for m in self.mines:
+            if m in neighbors:
+                neighbors.remove(m)
+                count -= 1
+
+        new_sentence = Sentence(neighbors, count)
+        self.knowledge.append(new_sentence)
+
+        updated = True
+        while updated:
+            updated = False
+            for sentence in list(self.knowledge):
+                for mine in sentence.known_mines():
+                    if mine not in self.mines:
+                        self.mark_mine(mine)
+                        updated = True
+                for safe in sentence.known_safes():
+                    if safe not in self.safes:
+                        self.mark_safe(safe)
+                        updated = True
+
+        for s1 in self.knowledge:
+            for s2 in self.knowledge:
+                if s1 != s2 and s1.cells and s1.cells.issubset(s2.cells):
+                    new_cells = s2.cells - s1.cells
+                    new_count = s2.count - s1.count
+                    new_sentence = Sentence(new_cells, new_count)
+                    if new_sentence not in self.knowledge:
+                        self.knowledge.append(new_sentence)
 
     def make_safe_move(self):
         """
@@ -204,7 +243,10 @@ class MinesweeperAI:
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise None
+        for cell in self.safes:
+            if cell not in self.moves_made:
+                return cell
+        return None
 
     def make_random_move(self):
         """
@@ -213,8 +255,10 @@ class MinesweeperAI:
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        while (
-            result := (random.randrange(self.width), random.randrange(self.height))
-        ) in self.moves_made or result in self.mines:
-            result = (random.randrange(self.width), random.randrange(self.height))
-        return result
+        choices = [
+            (i, j)
+            for i in range(self.height)
+            for j in range(self.width)
+            if (i, j) not in self.moves_made and (i, j) not in self.mines
+        ]
+        return random.choice(choices) if choices else None
