@@ -40,10 +40,7 @@ def crawl(directory):
 
     # Only include links to other pages in the corpus
     for filename in pages:
-        pages[filename] = set(
-            link for link in pages[filename]
-            if link in pages
-        )
+        pages[filename] = set(link for link in pages[filename] if link in pages)
 
     return pages
 
@@ -57,7 +54,15 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+
+    N = len(corpus)
+    base_probability = (1 - damping_factor) / N
+    result = {page: base_probability for page in corpus}
+    page_probability = damping_factor / len(corpus[page])
+    for p in corpus[page]:
+        result[p] += page_probability
+
+    return result
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,7 +74,8 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    transition_model(corpus, "1.html", damping_factor)
+    print(corpus)
 
 
 def iterate_pagerank(corpus, damping_factor):
