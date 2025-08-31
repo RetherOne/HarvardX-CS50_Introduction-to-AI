@@ -58,7 +58,9 @@ def transition_model(corpus, page, damping_factor):
     N = len(corpus)
     base_probability = (1 - damping_factor) / N
     result = {page: base_probability for page in corpus}
-    page_probability = damping_factor / len(corpus[page])
+
+    links = corpus[page] if corpus[page] else corpus.keys()
+    page_probability = damping_factor / len(links)
     for p in corpus[page]:
         result[p] += page_probability
 
@@ -84,6 +86,7 @@ def sample_pagerank(corpus, damping_factor, n):
             weights=list(model.values()),
             k=1,
         )[0]
+        random_page = next_page
         result[next_page] += 1
 
     for page in result:
@@ -101,7 +104,26 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
+    N = len(corpus)
+    result = {page: 1 / N for page in corpus}
+    prob = (1 - damping_factor) / N
+
+    delta = float("inf")
+    while delta > 0.001:
+        delta = 0
+        new_result = {}
+        for p in result:
+            M_p = {q for q, links in corpus.items() if p in links}
+            sum_M_p = 0
+            for q in M_p:
+                L_q = len(corpus[q]) if corpus[q] else N
+                sum_M_p += result[q] / L_q
+            new_rank = prob + damping_factor * sum_M_p
+            delta = max(delta, abs(new_rank - result[p]))
+            new_result[p] = new_rank
+        result = new_result
+
+    return result
 
 
 if __name__ == "__main__":
